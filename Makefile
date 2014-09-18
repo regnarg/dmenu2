@@ -1,66 +1,51 @@
-# dmenu - dynamic menu
-# See LICENSE file for copyright and license details.
+VERSION = 0.1
 
-include config.mk
+CC      ?= gcc
+LIBS     = -lX11 -lXinerama -lXft -lXrender -lfreetype -lz -lfontconfig
+CFLAGS  += -std=c99 -pedantic -Wall -Wextra -I/usr/include/freetype2
+CFLAGS  += -DXINERAMA -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\"
+LDFLAGS +=
 
-SRC = dmenu.c draw.c stest.c
-OBJ = ${SRC:.c=.o}
+PREFIX   ?= /usr/local
+BINPREFIX = $(PREFIX)/bin
+MANPREFIX = $(PREFIX)/share/man
 
-all: options dmenu stest
+DM_SRC = dmenu.c draw.c
+DM_OBJ = $(DM_SRC:.c=.o)
 
-options:
-	@echo dmenu build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
-	@echo "CC       = ${CC}"
+ST_SRC = stest.c
+ST_OBJ = $(ST_SRC:.c=.o)
+
+all: CFLAGS += -Os
+all: LDFLAGS += -s
+all: dmenu stest
+
+debug: CFLAGS += -g -O0 -DDEBUG
+debug: dmenu stest
 
 .c.o:
-	@echo CC -c $<
-	@${CC} -c $< ${CFLAGS}
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-${OBJ}: config.mk draw.h
+dmenu: $(DM_OBJ)
+	$(CC) -o $@ $(DM_OBJ) $(LDFLAGS) $(LIBS)
 
-dmenu: dmenu.o draw.o
-	@echo CC -o $@
-	@${CC} -o $@ dmenu.o draw.o ${LDFLAGS}
+stest: $(ST_OBJ)
+	$(CC) -o $@ $(ST_OBJ) $(LDFLAGS) $(LIBS)
 
-stest: stest.o
-	@echo CC -o $@
-	@${CC} -o $@ stest.o ${LDFLAGS}
-
-clean:
-	@echo cleaning
-	@rm -f dmenu stest ${OBJ} dmenu-${VERSION}.tar.gz
-
-dist: clean
-	@echo creating dist tarball
-	@mkdir -p dmenu-${VERSION}
-	@cp LICENSE Makefile README config.mk dmenu.1 draw.h dmenu_run stest.1 ${SRC} dmenu-${VERSION}
-	@tar -cf dmenu-${VERSION}.tar dmenu-${VERSION}
-	@gzip dmenu-${VERSION}.tar
-	@rm -rf dmenu-${VERSION}
-
-install: all
-	@echo installing executables to ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f dmenu dmenu_run stest ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/dmenu
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/dmenu_run
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/stest
-	@echo installing manual pages to ${DESTDIR}${MANPREFIX}/man1
-	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
-	@sed "s/VERSION/${VERSION}/g" < dmenu.1 > ${DESTDIR}${MANPREFIX}/man1/dmenu.1
-	@sed "s/VERSION/${VERSION}/g" < stest.1 > ${DESTDIR}${MANPREFIX}/man1/stest.1
-	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dmenu.1
-	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/stest.1
+install:
+	mkdir -p "$(DESTDIR)$(BINPREFIX)"
+	cp -p dmenu dmenu_run stest "$(DESTDIR)$(BINPREFIX)"
+	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
+	cp -p dmenu.1 stest.1 "$(DESTDIR)$(MANPREFIX)"/man1
 
 uninstall:
-	@echo removing executables from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/dmenu
-	@rm -f ${DESTDIR}${PREFIX}/bin/dmenu_run
-	@rm -f ${DESTDIR}${PREFIX}/bin/stest
-	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
-	@rm -f ${DESTDIR}${MANPREFIX}/man1/dmenu.1
-	@rm -f ${DESTDIR}${MANPREFIX}/man1/stest.1
+	rm -f "$(DESTDIR)$(BINPREFIX)"/dmenu
+	rm -f "$(DESTDIR)$(BINPREFIX)"/dmenu_run
+	rm -f "$(DESTDIR)$(BINPREFIX)"/stest
+	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/dmenu.1
+	rm -f "$(DESTDIR)$(MANPREFIX)"/man1/stest.1
 
-.PHONY: all options clean dist install uninstall
+clean:
+	rm -f $(DM_OBJ) $(ST_OBJ) dmenu stest
+
+.PHONY: all debug install uninstall clean
