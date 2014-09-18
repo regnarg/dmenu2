@@ -1,4 +1,4 @@
-.TH DMENU 1 dmenu\-VERSION
+.TH "DMENU" "1" "2014/09/18" "dmenu 0\&.1" "dmenu manual"
 .SH NAME
 dmenu \- dynamic menu
 .SH SYNOPSIS
@@ -21,7 +21,7 @@ dmenu \- dynamic menu
 .IR opacity ]
 .RB [ \-dim
 .IR opacity ]
-.RB [ \-dc 
+.RB [ \-dc
 .IR color ]
 .RB [ \-l
 .IR lines ]
@@ -73,11 +73,11 @@ dmenu will not show any items if the search string is empty.
 dmenu grabs the keyboard before reading stdin.  This is faster, but will lock up
 X until stdin reaches end\-of\-file.
 .TP
-.B \-r 
+.B \-r
 activates filter mode. All matching items currently shown in the list will be
 selected, starting with the item that is highlighted and wrapping around to the
-beginning of the list. 
-.TP 
+beginning of the list.
+.TP
 .B \-i
 dmenu matches menu items case insensitively.
 .TP
@@ -110,7 +110,7 @@ defines window opacity for dmenu. Defaults to 1.0.
 .TP
 .BI \-dim " opacity"
 enables screen dimming when dmenu appers. Takes dim opacity as argument.
-.TP 
+.TP
 .BI \-dc " color"
 defines color of screen dimming. Active only when -dim in effect. Defautls to black (#000000)
 .TP
