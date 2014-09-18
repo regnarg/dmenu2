@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
+#include <time.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -419,13 +419,17 @@ drawmenu(void) {
 void
 grabkeyboard(void) {
 	int i;
+	const struct timespec req = {
+		.tv_sec = 0,
+		.tv_nsec = 1000000
+	};
 
 	/* try to grab keyboard, we may have to wait for another process to ungrab */
 	for(i = 0; i < 1000; i++) {
 		if(XGrabKeyboard(dc->dpy, DefaultRootWindow(dc->dpy), True,
 		                 GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess)
 			return;
-		usleep(1000);
+		nanosleep(&req, NULL);
 	}
 	eprintf("cannot grab keyboard\n");
 }
