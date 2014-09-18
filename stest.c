@@ -21,6 +21,7 @@ main(int argc, char *argv[]) {
 	char buf[BUFSIZ], *p;
 	DIR *dir;
 	int opt;
+	int x = 0;
 
 	while((opt = getopt(argc, argv, "abcdefghln:o:pqrsuwx")) != -1)
 		switch(opt) {
@@ -37,7 +38,7 @@ main(int argc, char *argv[]) {
 			exit(2);
 		}
 	if(optind == argc)
-		while(fgets(buf, sizeof buf, stdin)) {
+		while(fgets(buf, sizeof(buf), stdin)) {
 			if((p = strchr(buf, '\n')))
 				*p = '\0';
 			test(buf, buf);
@@ -46,7 +47,9 @@ main(int argc, char *argv[]) {
 		if(FLAG('l') && (dir = opendir(argv[optind]))) {
 			/* test directory contents */
 			while((d = readdir(dir)))
-				if(snprintf(buf, sizeof buf, "%s/%s", argv[optind], d->d_name) < sizeof buf)
+				if ((x = snprintf(buf, sizeof(buf), "%s/%s", argv[optind], d->d_name)) < 0)
+					exit(3);
+				if(((size_t)x) < sizeof(buf))
 					test(buf, d->d_name);
 			closedir(dir);
 		}

@@ -118,7 +118,7 @@ main(int argc, char *argv[]) {
 	for(i = 1; i < argc; i++)
 		/* these options take no arguments */
 		if(!strcmp(argv[i], "-v")) {      /* prints version information */
-			puts("dmenu-"VERSION", (c) 2006-2012 dmenu engineers, see LICENSE for details");
+			puts("dmenu2-"VERSION);
 			exit(EXIT_SUCCESS);
 		}
 		else if(!strcmp(argv[i], "-hist"))
@@ -757,9 +757,10 @@ matchfuzzy(void) {
 	len = strlen(text);
 	matches = matchend = NULL;
 	for(item = items; item && item->text; item++) {
-		i = 0;
-		for(pos = fstrchr(item->text, text[i]); pos && text[i]; i++, pos = fstrchr(pos+1, text[i]));
-		if(i == len) appenditem(item, &matches, &matchend);
+		for (i = 0, pos = fstrchr(item->text, text[i]); pos && text[i]; i++)
+			pos = fstrchr(pos+1, text[i]);
+		if (((size_t)i) == len)
+			appenditem(item, &matches, &matchend);
 	}
 
 	curr = sel = matches;
@@ -846,7 +847,7 @@ readitems(void) {
   FILE *f;
   size_t len = 0;
 
-  bzero(&s, sizeof s);
+  memset(&s, 0, sizeof(s));
 
   if (histfile && (f = fopen(histfile, "r"))) {
     while ((len = readitem(f, &s)) != (size_t)-1) {
@@ -910,7 +911,7 @@ setup(void) {
 	utf8 = XInternAtom(dc->dpy, "UTF8_STRING", False);
 
 	/* calculate menu geometry */
-	bh = (line_height > dc->font.height + 2) ? line_height : dc->font.height + 2;
+	bh = (line_height > ((unsigned int)dc->font.height + 2)) ? line_height : ((unsigned int)dc->font.height + 2);
 	lines = MAX(lines, 0);
 	mh = (lines + 1) * bh;
 #ifdef XINERAMA
