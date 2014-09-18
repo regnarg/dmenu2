@@ -46,11 +46,12 @@ main(int argc, char *argv[]) {
 	for(; optind < argc; optind++)
 		if(FLAG('l') && (dir = opendir(argv[optind]))) {
 			/* test directory contents */
-			while((d = readdir(dir)))
+			while((d = readdir(dir))) {
 				if ((x = snprintf(buf, sizeof(buf), "%s/%s", argv[optind], d->d_name)) < 0)
 					exit(3);
 				if(((size_t)x) < sizeof(buf))
 					test(buf, d->d_name);
+			}
 			closedir(dir);
 		}
 		else
