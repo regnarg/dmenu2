@@ -67,7 +67,7 @@ static const char *normbgcolor = NULL;
 static const char *normfgcolor = NULL;
 static const char *selbgcolor  = NULL;
 static const char *selfgcolor  = NULL;
-static const char *dimcolor = NULL; 
+static const char *dimcolor = NULL;
 static const char *undercolor = NULL;
 static char *name = "dmenu";
 static char *class = "Dmenu";
@@ -118,7 +118,7 @@ main(int argc, char *argv[]) {
 	for(i = 1; i < argc; i++)
 		/* these options take no arguments */
 		if(!strcmp(argv[i], "-v")) {      /* prints version information */
-			puts("dmenu-"VERSION", © 2006-2012 dmenu engineers, see LICENSE for details");
+			puts("dmenu-"VERSION", (c) 2006-2012 dmenu engineers, see LICENSE for details");
 			exit(EXIT_SUCCESS);
 		}
 		else if(!strcmp(argv[i], "-hist"))
@@ -171,7 +171,7 @@ main(int argc, char *argv[]) {
 		else if (!strcmp(argv[i], "-o"))  /* opacity */
 			opacity = atof(argv[++i]);
 		else if (!strcmp(argv[i], "-dim"))  /* dim opacity */
-			dimopacity = atof(argv[++i]);	
+			dimopacity = atof(argv[++i]);
 		else if (!strcmp(argv[i], "-dc")) /* dim color */
 			dimcolor = argv[++i];
 		else if (!strcmp(argv[i], "-uc")) /* underline color */
@@ -384,7 +384,7 @@ drawmenu(void) {
 		drawrect(dc, curpos, (dc->h - dc->font.height)/2 + 1, 1, dc->font.height -1, True, normcol->FG);
 
 
-    if(!quiet || strlen(text) > 0) {    
+    if(!quiet || strlen(text) > 0) {
         if(lines > 0) {
             /* draw vertical list */
             dc->w = mw - dc->x;
@@ -641,7 +641,7 @@ keypress(XKeyEvent *ev) {
 				cursor = strlen(text);
 				match();
 			}
-		} 
+		}
 		break;
 	}
 	drawmenu();
@@ -649,19 +649,18 @@ keypress(XKeyEvent *ev) {
 
 char *
 strchri(const char *s, int c) {
-	char *u, *l;
-	if(!isalpha(c)) return strchr(s, c);
-	if(isupper(c)) {
-		u = strchr(s, c);
-		l = strchr(s, tolower(c));
+	int i;
+
+	c = tolower(c);
+	while (*s) {
+		i = tolower(*s);
+		if (i == c)
+			return ((char *) s);
+		s++;
 	}
-	else {
-		l = strchr(s, c);
-		u = strchr(s, toupper(c));
-	}
+
+	return NULL;
 }
-
-
 
 void
 matchstr(void) {
@@ -750,7 +749,7 @@ matchfuzzy(void) {
 	size_t len;
 	Item *item;
 	char *pos;
-	
+
 	len = strlen(text);
 	matches = matchend = NULL;
 	for(item = items; item && item->text; item++) {
@@ -921,7 +920,7 @@ setup(void) {
 			x = info[snum].x_org;
 			y = info[snum].y_org + (topbar ? yoffset : info[i].height - mh - yoffset);
 			mw = info[snum].width;
-			
+
 			dimx = info[snum].x_org;
 			dimy = info[snum].y_org;
 			dimw = info[snum].width;
@@ -966,10 +965,10 @@ setup(void) {
 		x = 0;
 		y = topbar ? 0 : DisplayHeight(dc->dpy, screen) - mh - yoffset;
 		mw = DisplayWidth(dc->dpy, screen);
-		
+
 		dimx = 0;
 		dimy = 0;
-		dimw = WidthOfScreen(defScreen); 
+		dimw = WidthOfScreen(defScreen);
 		dimh = HeightOfScreen(defScreen);
 	}
 
@@ -978,9 +977,9 @@ setup(void) {
 	promptw = (prompt && *prompt) ? textw(dc, prompt) : 0;
 	inputw = MIN(inputw, mw/3);
 	match();
-	
+
 	swa.override_redirect = True;
-	
+
 	/* create dim window */
 	if(dimopacity > 0) {
 		swa.background_pixel = dimcol->BG;
@@ -991,16 +990,16 @@ setup(void) {
 	                    CWOverrideRedirect | CWBackPixel | CWEventMask, &swa);
 		XClassHint dimhint = { .res_name = dimname, .res_class = class };
   	XSetClassHint(dc->dpy, dim, &dimhint);
-  
+
 		dimopacity = MIN(MAX(dimopacity, 0), 1);
   	unsigned int dimopacity_set = (unsigned int)(dimopacity * OPAQUE);
   	XChangeProperty(dc->dpy, dim, XInternAtom(dc->dpy, OPACITY, False),
 											XA_CARDINAL, 32, PropModeReplace,
 											(unsigned char *) &dimopacity_set, 1L);
-	
+
 		XMapRaised(dc->dpy, dim);
 	}
-	
+
 	/* create menu window */
 	swa.background_pixel = normcol->BG;
 	swa.event_mask = ExposureMask | KeyPressMask | VisibilityChangeMask;
@@ -1016,7 +1015,7 @@ setup(void) {
   XChangeProperty(dc->dpy, win, XInternAtom(dc->dpy, OPACITY, False),
 											XA_CARDINAL, 32, PropModeReplace,
 											(unsigned char *) &opacity_set, 1L);
-	
+
 	/* open input methods */
 	xim = XOpenIM(dc->dpy, NULL, NULL, NULL);
 	xic = XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
