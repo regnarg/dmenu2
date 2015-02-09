@@ -85,6 +85,7 @@ static ColorSet *dimcol;
 static ColorSet *undercol;
 static Atom clip, utf8;
 static Bool topbar = True;
+static Bool centerX = False;
 static Bool running = True;
 static Bool filter = False;
 static Bool maskin = False;
@@ -142,6 +143,8 @@ main(int argc, char *argv[]) {
          maskin = True;
       else if(!strcmp(argv[i], "-noinput"))
          noinput = True;
+      else if(!strcmp(argv[i], "-centerx"))
+         centerX = True;
 
 		else if(!strcmp(argv[i], "-t"))
 			match = matchtok;
@@ -1003,6 +1006,12 @@ setup(void) {
 											(unsigned char *) &dimopacity_set, 1L);
 
 		XMapRaised(dc->dpy, dim);
+	}
+
+	/* if no width was specified, dmenu will span the entire screen, so we don't
+	 * need to center */
+	if(centerX && width != 0) {
+		x = x + ((dimw - width) / 2);
 	}
 
 	/* create menu window */
