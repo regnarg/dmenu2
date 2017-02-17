@@ -102,6 +102,8 @@ static double opacity = 1.0, dimopacity = 0.0;
 static char hist[HIST_SIZE][HIST_LINE_LEN];
 static char *histfile = NULL;
 static int hcnt = 0;
+static const char *default_text = NULL;
+static int prefer_input = 0;
 
 #define OPAQUE 0xffffffff
 #define OPACITY "_NET_WM_WINDOW_OPACITY"
@@ -148,6 +150,8 @@ main(int argc, char *argv[]) {
 
 		else if(!strcmp(argv[i], "-t"))
 			match = matchtok;
+		else if(!strcmp(argv[i], "-prefer-input"))  /* always return input rather than selection */
+            prefer_input = 1;
 		else if(i+1 == argc)
 			usage();
 		/* these options take one argument */
@@ -181,6 +185,8 @@ main(int argc, char *argv[]) {
 			undercolor = argv[++i];
 		else if(!strcmp(argv[i], "-p"))   /* adds prompt to left of input field */
 			prompt = argv[++i];
+		else if(!strcmp(argv[i], "-d"))   /* sets default input text */
+			default_text = argv[++i];
 		else if(!strcmp(argv[i], "-fn"))  /* font or font set */
 			font = argv[++i];
 		else if(!strcmp(argv[i], "-nb"))  /* normal background color */
@@ -495,9 +501,18 @@ keypress(XKeyEvent *ev) {
 			XConvertSelection(dc->dpy, (ev->state & ShiftMask) ? clip : XA_PRIMARY,
 			                  utf8, utf8, win, CurrentTime);
 			return;
+		case XK_v: /* paste selection */
+			XConvertSelection(dc->dpy, clip,
+			                  utf8, utf8, win, CurrentTime);
+			return;
 		default:
 			return;
 		}
+    else if((ev->state & ShiftMask) && ksym == XK_Insert) {
+        XConvertSelection(dc->dpy, XA_PRIMARY,
+                            utf8, utf8, win, CurrentTime);
+        return;
+    }
 	else if(ev->state & Mod1Mask)
 		switch(ksym) {
 		case XK_g: ksym = XK_Home;  break;
@@ -579,7 +594,7 @@ keypress(XKeyEvent *ev) {
 		break;
 	case XK_Return:
 	case XK_KP_Enter:
- 		if((ev->state & ShiftMask) || !sel){
+ 		if((ev->state & ShiftMask) || !sel || prefer_input){
  			puts(text);
  			writehistory(text);
  		}
@@ -984,7 +999,10 @@ setup(void) {
 	mw = width ? width : mw;
 	promptw = (prompt && *prompt) ? textw(dc, prompt) : 0;
 	inputw = MIN(inputw, mw/3);
-	match();
+	if(default_text != NULL)
+		insert(default_text, strlen(default_text));
+	else
+		match();
 
 	swa.override_redirect = True;
 
@@ -1043,8 +1061,8 @@ setup(void) {
 void
 usage(void) {
 	fputs("usage: dmenu [-b] [-q] [-f] [-r] [-i] [-z] [-t] [-mask] [-noinput]\n"
-				"             [-s screen] [-name name] [-class class] [ -o opacity]\n"
-				"             [-dim opcity] [-dc color] [-l lines] [-p prompt] [-fn font]\n"
+				"             [-s screen] [-name name] [-class class] [ -o opacity] [-d default-text]\n"
+				"             [-dim opcity] [-dc color] [-l lines] [-p prompt] [-fn font] [-prefer-input]\n"
 	      "             [-x xoffset] [-y yoffset] [-h height] [-w width] [-uh height] [-centerx]\n"
 	      "             [-nb color] [-nf color] [-sb color] [-sf color] [-uc color] [-hist histfile] [-v]\n", stderr);
 	exit(EXIT_FAILURE);
